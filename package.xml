@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<package>
+  <name>stanley</name>
+  <version>0.0.0</version>
+      <description>
+
+        This package provides an implementation of the Dynamic Window Approach to
+        local robot navigation on a plane. Given a global plan to follow and a
+        costmap, the local planner produces velocity commands to send to a mobile
+        base. This package supports any robot who's footprint can be represented as
+        a convex polygon or cicrle, and exposes its configuration as ROS parameters
+        that can be set in a launch file. The parameters for this planner are also
+        dynamically reconfigurable. This package's ROS wrapper adheres to the
+        BaseLocalPlanner interface specified in the <a href="http://wiki.ros.org/nav_core">nav_core</a> package.
+
+    </description>
+    <author>Branko Radoš</author>
+    <author>branko.rados@fer.hr</author>
+    <maintainer email="branko.rados@fer.hr">Branko Radoš</maintainer>
+    <license>no</license>
+
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>costmap_2d</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_core</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_bullet</build_depend>
+  <build_depend>tf2_eigen</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>tf2_kdl</build_depend>
+  <build_depend>tf2_msgs</build_depend>
+  <build_depend>tf2_py</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>tf2_sensor_msgs</build_depend>
+  <build_depend>tf2_tools</build_depend>
+  <run_depend>cmake_modules</run_depend>
+  <run_depend>costmap_2d</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>nav_core</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>tf2</run_depend>
+  <run_depend>tf2_bullet</run_depend>
+  <run_depend>tf2_eigen</run_depend>
+  <run_depend>tf2_geometry_msgs</run_depend>
+  <run_depend>tf2_kdl</run_depend>
+  <run_depend>tf2_msgs</run_depend>
+  <run_depend>tf2_py</run_depend>
+  <run_depend>tf2_ros</run_depend>
+  <run_depend>tf2_sensor_msgs</run_depend>
+  <run_depend>tf2_tools</run_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
