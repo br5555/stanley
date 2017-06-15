@@ -46,7 +46,7 @@ public:
     /**
       * @brief  Constructor for the planner
       */
-	StanleyPlanner();
+	StanleyPlanner() ;
 	/**
        * @brief  Callback method which updates robots current position and computes 
        * velocities(angular/ linear) for Stanley algorithm.
@@ -80,7 +80,7 @@ private:
        */
 	ros::Publisher speedPub, errorPub,omegaPub,modulPub,  pathXPub, pathYPub, robotXPub, robotYPub;
 
-	
+	std::string map_frame_id_, robot_frame_id_;
 	/**
        * @brief  private array which cointains points of desire path
        */

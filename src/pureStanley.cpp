@@ -35,7 +35,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		    
 
 
-        transformStamped = tfBuffer.lookupTransform("world", "robot0",
+        transformStamped = tfBuffer.lookupTransform(map_frame_id_, robot_frame_id_,
 					ros::Time(0));
 			break;
 		} catch (tf2::TransformException &ex) {
@@ -197,7 +197,9 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		    
 //			transformStamped = tfBuffer.lookupTransform("odom", "base_footprint",
 //					ros::Time(0));
-        transformStamped = tfBuffer.lookupTransform("world", "robot0",
+
+        ROS_INFO("%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
+        transformStamped = tfBuffer.lookupTransform(map_frame_id_, robot_frame_id_,
 					ros::Time(0));
 			break;
 		} catch (tf2::TransformException &ex) {
@@ -231,7 +233,8 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		}
 	}
 
-	StanleyPlanner::StanleyPlanner() {
+	StanleyPlanner::StanleyPlanner() : map_frame_id_("map"), robot_frame_id_("base_link")
+                             {
 
 
         pathSub = n.subscribe("/move_base/NavfnROS/plan", 1, &StanleyPlanner::path_callback, this);
@@ -240,7 +243,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 				&StanleyPlanner::pose_callback, this);
 
 		speedPub = n.advertise < Twist > ("/cmd_vel", 1);
-		
+		        ROS_INFO("++++++++++++++++%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
 		errorPub=n.advertise < Float64 > ("/error", 1);
 		omegaPub=n.advertise < Float64 > ("/omega", 1);
 		modulPub=n.advertise < Float64 > ("/modul", 1);
@@ -248,7 +251,10 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		pathYPub=n.advertise < Float64 > ("/pathY", 1);
 		robotXPub=n.advertise < Float64 > ("/robotX", 1);
 		robotYPub=n.advertise < Float64 > ("/robotY", 1);
-
+		
+          n.param<string>("map_frame_id", map_frame_id_, "map");
+        n.param<string>("robot_frame_id", robot_frame_id_, "base_link");
+                ROS_INFO("----------------%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
 		k = 1.1;
 		v = 0.4;
 		k2 = 0.5;
