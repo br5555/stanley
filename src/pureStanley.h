@@ -64,7 +64,7 @@ private:
     /**
        * @brief  private refference to node handler for instantiate new publishers and subscribers 
        */
-	ros::NodeHandle n;
+	ros::NodeHandle n, nh_private_;
 	/**
        * @brief private instance of TransformStamped for getting robot to orld transform vector
        */

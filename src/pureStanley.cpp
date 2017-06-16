@@ -233,7 +233,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		}
 	}
 
-	StanleyPlanner::StanleyPlanner() : map_frame_id_("map"), robot_frame_id_("base_link")
+	StanleyPlanner::StanleyPlanner() : map_frame_id_("map"),nh_private_("~"), robot_frame_id_("base_link")
                              {
 
 
@@ -252,8 +252,8 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		robotXPub=n.advertise < Float64 > ("/robotX", 1);
 		robotYPub=n.advertise < Float64 > ("/robotY", 1);
 		
-          n.param<string>("map_frame_id", map_frame_id_, "map");
-        n.param<string>("robot_frame_id", robot_frame_id_, "base_link");
+        nh_private_.param<string>("map_frame_id", map_frame_id_, "map");
+        nh_private_.param<string>("robot_frame_id", robot_frame_id_, "base_link");
                 ROS_INFO("----------------%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
 		k = 1.1;
 		v = 0.4;
