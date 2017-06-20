@@ -43,3 +43,10 @@ target_link_libraries(pureStanley
    ${catkin_LIBRARIES}
 
  )
+ 
+ add_executable(pureStanley2 src/pureStanley2.cpp)
+
+target_link_libraries(pureStanley2
+   ${catkin_LIBRARIES}
+
+ )
