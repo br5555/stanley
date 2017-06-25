@@ -87,7 +87,34 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	double a21 = robot_X - path.poses[i].pose.position.x;
 	double a22 = robot_Y - path.poses[i].pose.position.y;
 	double Xprod = a11*a22-a12*a21;
+
+	double x1 = -robot_X + path.poses[i].pose.position.x;
+	double y1 = -robot_Y + path.poses[i].pose.position.y;
+	double y2_1=0, x2_1 =0,y2_2=0, x2_2 =0;
+	if(x1 == 0){
+		x2_1 =1;
+		x2_2 =-1;
+		y2_1 = 0;
+		y2_2 = 0;
+	}else{
+		y2_1 =1;
+		y2_2 =-1;
+		x2_1 = -(y1/x1)*y2_1;
+		x2_2 = -(y1/x1)*y2_2;
+
+	}
 	
+	double x2 = path.poses[i + 1].pose.position.x - path.poses[i].pose.position.x;
+	double y2 = path.poses[i + 1].pose.position.y - path.poses[i].pose.position.y;
+
+	double cos1 = (x2_1*x2+y2_1*y2)/abs( (sqrt(pow(x2_1, 2)+pow(y2_1, 2))) * (sqrt(pow(x2, 2)+pow(y2, 2)) ) );
+	double cos2 = (x2_2*x2+y2_2*y2)/abs((sqrt(pow(x2_2, 2)+pow(y2_2, 2))) * (sqrt(pow(x2, 2)+pow(y2, 2))));
+	double pathAngleCross = 0;
+	if(cos1>=0){
+		pathAngleCross = atan2(y2_1,x2_1);
+	}else{
+		pathAngleCross = atan2(y2_2,x2_2);
+	}
 	//Getting sign which defines if robot if robot is on the right side in regard to path or left side
 	//if robot is on the rght side of path than sign is positive because positive anguar velocity is counter clockwise
 	//and robot desire direction will intersect with path and otherwise.
@@ -117,12 +144,12 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 			}
     //Finding diference between robots angle and paths angle
 	double delta = -angleRobot + anglePath;
-            
+        ROS_INFO("%f | %f", pathAngleCross, anglePath);
     //Calcualte closest distance from robot to goal point
 	double modulDistance = sqrt(pow(path.poses[i].pose.position.y-robot_Y, 2)+pow(path.poses[i].pose.position.x-robot_X, 2));
          
 			//stanley formula
-			double angle = k2*(delta + sign*atan2((k * modulDistance)/1.0,1));
+			double angle = k2*(delta + sign*atan2((k * modulDistance)/v,1));
             
 			double omega = angle/((pocetno - proslo)) ;
             
@@ -147,7 +174,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
             
             //setting velocities
 			cmd_vel.angular.z =omega;
-			cmd_vel.linear.x = 1.0;//velocity;//0.1;//
+			cmd_vel.linear.x = v;//velocity;//0.1;//
             
             //uploding data for analyse data
             std_msgs::Float64 msgDelta, msgOmega, msgModulDistance, msgRobotX, msgRobotY;
@@ -243,7 +270,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 				&StanleyPlanner::pose_callback, this);
 
 		speedPub = n.advertise < Twist > ("/cmd_vel", 1);
-		        ROS_INFO("++++++++++++++++%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
+		     //   ROS_INFO("++++++++++++++++%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
 		errorPub=n.advertise < Float64 > ("/error", 1);
 		omegaPub=n.advertise < Float64 > ("/omega", 1);
 		modulPub=n.advertise < Float64 > ("/modul", 1);
@@ -255,9 +282,9 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
         nh_private_.param<string>("map_frame_id", map_frame_id_, "map");
         nh_private_.param<string>("robot_frame_id", robot_frame_id_, "base_link");
                 ROS_INFO("----------------%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
-		k = 1.1;
-		v = 0.4;
-		k2 = 0.5;
+		k = 0.6;
+		v = 0.2;
+		k2 = 0.2;
 		yaw = 0;
 		ks = 10;
 		condition = false;
