@@ -1,4 +1,4 @@
-#include "pureStanley.h"
+#include "pureStanley2.h"
 
 //PLUGINLIB_EXPORT_CLASS(local_planner::StanleyPlanner, nav_core::BaseLocalPlanner)
 
@@ -35,7 +35,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		    
 
 
-        transformStamped = tfBuffer.lookupTransform(map_frame_id_, robot_frame_id_,
+        transformStamped = tfBuffer.lookupTransform("world", "robot0",
 					ros::Time(0));
 			break;
 		} catch (tf2::TransformException &ex) {
@@ -87,9 +87,12 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	double a21 = robot_X - path.poses[i].pose.position.x;
 	double a22 = robot_Y - path.poses[i].pose.position.y;
 	double Xprod = a11*a22-a12*a21;
+	
 
+//########################Zanemariti
 	double x1 = -robot_X + path.poses[i].pose.position.x;
 	double y1 = -robot_Y + path.poses[i].pose.position.y;
+	
 	double y2_1=0, x2_1 =0,y2_2=0, x2_2 =0;
 	if(x1 == 0){
 		x2_1 =1;
@@ -106,7 +109,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	
 	double x2 = path.poses[i + 1].pose.position.x - path.poses[i].pose.position.x;
 	double y2 = path.poses[i + 1].pose.position.y - path.poses[i].pose.position.y;
-
+	double kutjedan = atan2(y2,x2);
 	double cos1 = (x2_1*x2+y2_1*y2)/abs( (sqrt(pow(x2_1, 2)+pow(y2_1, 2))) * (sqrt(pow(x2, 2)+pow(y2, 2)) ) );
 	double cos2 = (x2_2*x2+y2_2*y2)/abs((sqrt(pow(x2_2, 2)+pow(y2_2, 2))) * (sqrt(pow(x2, 2)+pow(y2, 2))));
 	double pathAngleCross = 0;
@@ -115,6 +118,22 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	}else{
 		pathAngleCross = atan2(y2_2,x2_2);
 	}
+	
+	double cosOnPath = (x1*x2+y1*y2)/abs( (sqrt(pow(x1, 2)+pow(y1, 2))) * (sqrt(pow(x2, 2)+pow(y2, 2)) ) );
+	if(abs(cosOnPath-1)<0.004){
+		pathAngleCross=0;
+	}
+//####################Kraj
+
+//###############Kut proba
+	KDL::Frame F_bl_end = transformToBaseLink(path.poses[i].pose, transformStamped.transform);
+
+      
+      	double rollPath, pitchPath, yawPath;
+      	F_bl_end.M.GetRPY(rollPath, pitchPath, yawPath);
+      	
+//####################Kraj
+
 	//Getting sign which defines if robot if robot is on the right side in regard to path or left side
 	//if robot is on the rght side of path than sign is positive because positive anguar velocity is counter clockwise
 	//and robot desire direction will intersect with path and otherwise.
@@ -131,6 +150,9 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	double anglePath = atan2(
 			path.poses[i + step].pose.position.y - path.poses[i].pose.position.y,
 			path.poses[i + step].pose.position.x - path.poses[i].pose.position.x);
+	double kutosam = atan2(
+			path.poses[i + 2*step].pose.position.y - path.poses[i].pose.position.y,
+			path.poses[i + 2*step].pose.position.x - path.poses[i].pose.position.x);
 			if(anglePath > PI){
 			    anglePath -=(2*PI);
 			}else if(anglePath < -PI){
@@ -144,12 +166,13 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 			}
     //Finding diference between robots angle and paths angle
 	double delta = -angleRobot + anglePath;
-       // ROS_INFO("%f | %f", pathAngleCross, anglePath);
+       // ROS_INFO("%f", anglePath*(180/3.14159)); 
+       //ROS_INFO("%f | %f | %f", pathAngleCross, anglePath, yawPath);   
     //Calcualte closest distance from robot to goal point
 	double modulDistance = sqrt(pow(path.poses[i].pose.position.y-robot_Y, 2)+pow(path.poses[i].pose.position.x-robot_X, 2));
          
 			//stanley formula
-			double angle = k2*(delta + sign*atan2((k * modulDistance)/v,1));
+			double angle = k2*(delta + sign*atan2((k * modulDistance)/1.0,1));
             
 			double omega = angle/((pocetno - proslo)) ;
             
@@ -174,15 +197,20 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
             
             //setting velocities
 			cmd_vel.angular.z =omega;
-			cmd_vel.linear.x = v;//velocity;//0.1;//
+			cmd_vel.linear.x = 1.0;//velocity;//0.1;//
             
             //uploding data for analyse data
-            std_msgs::Float64 msgDelta, msgOmega, msgModulDistance, msgRobotX, msgRobotY;
+            std_msgs::Float64 msgDelta, msgOmega, msgModulDistance, msgRobotX, msgRobotY, kutjedanD, kutosamD, kutpetD, kutdamjanD, kutja2D;
             msgDelta.data = delta;
             msgOmega.data = omega;
             msgModulDistance.data =modulDistance;
             msgRobotX.data = robot_X ;
             msgRobotY.data = robot_Y;
+	    kutjedanD.data=kutjedan;
+	    kutosamD.data=kutosam;
+	    kutpetD.data =anglePath ;
+	    kutdamjanD.data=yawPath;
+	    kutja2D.data =-1*pathAngleCross ;
             std_msgs::Float64 msgPathX, msgPathY;
 
 		    msgPathX.data = path.poses[i].pose.position.x;
@@ -196,6 +224,12 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		    modulPub.publish(msgModulDistance);
 		    robotXPub.publish(msgRobotX);
 		    robotYPub.publish(msgRobotY);
+		
+		kutjedanPub.publish(kutjedanD);
+		kutpetPub.publish(kutpetD);
+		kutosamPub.publish(kutosamD);
+		kutDamjanPub.publish(kutdamjanD);
+		kutja2.publish(kutja2D);
 			
             
 
@@ -224,9 +258,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		    
 //			transformStamped = tfBuffer.lookupTransform("odom", "base_footprint",
 //					ros::Time(0));
-
-        ROS_INFO("%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
-        transformStamped = tfBuffer.lookupTransform(map_frame_id_, robot_frame_id_,
+        transformStamped = tfBuffer.lookupTransform("world", "robot0",
 					ros::Time(0));
 			break;
 		} catch (tf2::TransformException &ex) {
@@ -252,7 +284,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		
 	double modulDistance = sqrt(pow(path.poses[r].pose.position.y-path.poses[indexNext].pose.position.y, 2)+pow(path.poses[r].pose.position.x-path.poses[indexNext].pose.position.x, 2));
 	    nextStep++;
-	if(modulDistance >= 0.05){
+	if(modulDistance >= 0.03){
 	    step = (step+nextStep)/2;
 	    nextStep=0;
 	    indexNext = r;
@@ -260,8 +292,34 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		}
 	}
 
-	StanleyPlanner::StanleyPlanner() : map_frame_id_("map"),nh_private_("~"), robot_frame_id_("base_link")
-                             {
+	KDL::Frame StanleyPlanner::transformToBaseLink(const geometry_msgs::Pose& pose,
+                                            const geometry_msgs::Transform& tf)
+{
+  // Pose in global (map) frame
+  KDL::Frame F_map_pose(KDL::Rotation::Quaternion(pose.orientation.x,
+                                                  pose.orientation.y,
+                                                  pose.orientation.z,
+                                                  pose.orientation.w),
+                        KDL::Vector(pose.position.x,
+                                    pose.position.y,
+                                    pose.position.z));
+
+  // Robot (base_link) in global (map) frame
+  KDL::Frame F_map_tf(KDL::Rotation::Quaternion(tf.rotation.x,
+                                                tf.rotation.y,
+                                                tf.rotation.z,
+                                                tf.rotation.w),
+                      KDL::Vector(tf.translation.x,
+                                  tf.translation.y,
+                                  tf.translation.z));
+
+  // TODO: See how the above conversions can be done more elegantly
+  // using tf2_kdl and tf2_geometry_msgs
+
+  return F_map_tf.Inverse()*F_map_pose;
+}
+	
+	StanleyPlanner::StanleyPlanner() {
 
 
         pathSub = n.subscribe("/move_base/NavfnROS/plan", 1, &StanleyPlanner::path_callback, this);
@@ -270,7 +328,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 				&StanleyPlanner::pose_callback, this);
 
 		speedPub = n.advertise < Twist > ("/cmd_vel", 1);
-		     //   ROS_INFO("++++++++++++++++%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
+		
 		errorPub=n.advertise < Float64 > ("/error", 1);
 		omegaPub=n.advertise < Float64 > ("/omega", 1);
 		modulPub=n.advertise < Float64 > ("/modul", 1);
@@ -278,13 +336,14 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		pathYPub=n.advertise < Float64 > ("/pathY", 1);
 		robotXPub=n.advertise < Float64 > ("/robotX", 1);
 		robotYPub=n.advertise < Float64 > ("/robotY", 1);
-		
-        nh_private_.param<string>("map_frame_id", map_frame_id_, "map");
-        nh_private_.param<string>("robot_frame_id", robot_frame_id_, "base_link");
-            //    ROS_INFO("----------------%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
-		k = 0.6;
-		v = 0.2;
-		k2 = 0.2;
+		kutjedanPub = n.advertise < Float64 > ("/kutjedan", 1);
+		kutpetPub = n.advertise < Float64 > ("/kutpet", 1);
+		kutosamPub =n.advertise < Float64 > ("/kutosam", 1);
+		kutDamjanPub = n.advertise < Float64 > ("/kutdamjan", 1);
+		kutja2 = n.advertise < Float64 > ("/kutja", 1);
+		k = 0.15;
+		v = 0.4;
+		k2 = 0.6;
 		yaw = 0;
 		ks = 10;
 		condition = false;
