@@ -13,7 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_core
   nav_msgs
-  nav_msgs
   roscpp
   roslib
   rospy
@@ -24,7 +23,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_msgs
   tf2_py
   tf2_ros
-  tf2_sensor_msgs
   tf2_tools
 )
 
