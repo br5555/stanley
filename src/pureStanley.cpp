@@ -225,7 +225,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 //			transformStamped = tfBuffer.lookupTransform("odom", "base_footprint",
 //					ros::Time(0));
 
-        ROS_INFO("%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
+        //ROS_INFO("%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
         transformStamped = tfBuffer.lookupTransform(map_frame_id_, robot_frame_id_,
 					ros::Time(0));
 			break;
@@ -260,8 +260,8 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		}
 	}
 
-	StanleyPlanner::StanleyPlanner() : map_frame_id_("map"),nh_private_("~"), robot_frame_id_("base_link")
-                             {
+	StanleyPlanner::StanleyPlanner() : nh_private_("~")
+    {
 
 
         pathSub = n.subscribe("/move_base/NavfnROS/plan", 1, &StanleyPlanner::path_callback, this);
@@ -281,9 +281,10 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		
         nh_private_.param<string>("map_frame_id", map_frame_id_, "map");
         nh_private_.param<string>("robot_frame_id", robot_frame_id_, "base_link");
+        nh_private_.param<double>("robot_cmd_vel", v, 0.2);
             //    ROS_INFO("----------------%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
 		k = 0.6;
-		v = 0.2;
+		//v = 0.2;
 		k2 = 0.2;
 		yaw = 0;
 		ks = 10;
