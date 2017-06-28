@@ -32,6 +32,14 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <cmath>
+#include "stanley/stanleyAnalysis.h"
+#include <geometry_msgs/Point.h>
+#
+#include <geometry_msgs/PolygonStamped.h>
+
+
+#include <kdl/frames.hpp>
 /**
  * Class implements Stanely algorithm for path tracking.
  * Stanely algorithm tracking th e path with constant linear velocity.
@@ -58,7 +66,8 @@ public:
        * @param data array of points which define desire robot path.
        */
 	void path_callback(const nav_msgs::Path data);
-
+    KDL::Frame transformToBaseLink(const geometry_msgs::Pose& pose,
+                                 const geometry_msgs::Transform& tf);
 
 private:
     /**
@@ -78,7 +87,8 @@ private:
        * like error, angular velocity, x and y component od path point and robots x and y odometry values for
        * plotting data.
        */
-	ros::Publisher speedPub, errorPub,omegaPub,modulPub,  pathXPub, pathYPub, robotXPub, robotYPub;
+		ros::Publisher speedPub, plotPub;
+
 
 	std::string map_frame_id_, robot_frame_id_;
 	/**

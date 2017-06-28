@@ -46,6 +46,9 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 		}
 	}
 	
+    
+
+
 	//Find heading angle of robot
 		 tf2::Quaternion quaternion(state.pose.pose.orientation.x,
 					state.pose.pose.orientation.y,
@@ -62,6 +65,15 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	double robot_X =  transformStamped.transform.translation.x;
 	double robot_Y = transformStamped.transform.translation.y;
 	
+
+    double modulDistance1 = sqrt(pow(path.poses[path.poses.size()-1].pose.position.y-robot_Y, 2)+pow(path.poses[path.poses.size()-1].pose.position.x-robot_X, 2));
+    if(modulDistance1 <0.3){
+        cmd_vel.angular.z =0;
+	    cmd_vel.linear.x = 0;
+        speedPub.publish(cmd_vel);
+	    spinOnce();
+        return;
+    }
 	//Find index of closest point on path from robot
 	double modulDistanceForI = 0;
 	for(int h = i+1; h<path.poses.size(); h++){
@@ -126,6 +138,16 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	}else{
 	    sign =0;
 	}
+
+    	KDL::Frame F_bl_end = transformToBaseLink(path.poses[i].pose, transformStamped.transform);
+
+        double kutjedan=0;
+      	double rollPath, pitchPath, yawPath;
+      	F_bl_end.M.GetRPY(rollPath, pitchPath, yawPath);
+    if(i !=0)  	
+    kutjedan = atan2(
+			path.poses[i].pose.position.y - path.poses[i-1].pose.position.y,
+			path.poses[i].pose.position.x - path.poses[i-1].pose.position.x);
 	double angleRobot = yaw;
     //Finding curvature of the path
 	double anglePath = atan2(
@@ -174,31 +196,32 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
             
             //setting velocities
 			cmd_vel.angular.z =omega;
-			cmd_vel.linear.x = v;//velocity;//0.1;//
-            
-            //uploding data for analyse data
-            std_msgs::Float64 msgDelta, msgOmega, msgModulDistance, msgRobotX, msgRobotY;
-            msgDelta.data = delta;
-            msgOmega.data = omega;
-            msgModulDistance.data =modulDistance;
-            msgRobotX.data = robot_X ;
-            msgRobotY.data = robot_Y;
-            std_msgs::Float64 msgPathX, msgPathY;
+			cmd_vel.linear.x = v;
 
-		    msgPathX.data = path.poses[i].pose.position.x;
-		    msgPathY.data = path.poses[i].pose.position.y;
-		    pathXPub.publish(msgPathX);
-		    pathYPub.publish(msgPathY);
+
+            stanley::stanleyAnalysis plotmsgs;
+
+		plotmsgs.omega=omega;
+plotmsgs.error=delta;
+plotmsgs.pathX=path.poses[i].pose.position.x;
+plotmsgs.pathY=path.poses[i].pose.position.y;
+plotmsgs.robotX=robot_X;
+plotmsgs.robotY=robot_Y;
+plotmsgs.modulDistance=modulDistance;
+plotmsgs.pathAngle=anglePath;
+
+	   plotPub.publish(plotmsgs);
+               
+
+
+
+		   
 		    
 			speedPub.publish(cmd_vel);
-			errorPub.publish(msgDelta);
-		    omegaPub.publish(msgOmega);
-		    modulPub.publish(msgModulDistance);
-		    robotXPub.publish(msgRobotX);
-		    robotYPub.publish(msgRobotY);
 			
-            
 
+			
+           
            
 			spinOnce();
 			
@@ -207,6 +230,33 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 
 	}
 
+KDL::Frame StanleyPlanner::transformToBaseLink(const geometry_msgs::Pose& pose,
+                                            const geometry_msgs::Transform& tf)
+{
+  // Pose in global (map) frame
+  KDL::Frame F_map_pose(KDL::Rotation::Quaternion(pose.orientation.x,
+                                                  pose.orientation.y,
+                                                  pose.orientation.z,
+                                                  pose.orientation.w),
+                        KDL::Vector(pose.position.x,
+                                    pose.position.y,
+                                    pose.position.z));
+
+  // Robot (base_link) in global (map) frame
+  KDL::Frame F_map_tf(KDL::Rotation::Quaternion(tf.rotation.x,
+                                                tf.rotation.y,
+                                                tf.rotation.z,
+                                                tf.rotation.w),
+                      KDL::Vector(tf.translation.x,
+                                  tf.translation.y,
+                                  tf.translation.z));
+
+  // TODO: See how the above conversions can be done more elegantly
+  // using tf2_kdl and tf2_geometry_msgs
+
+  return F_map_tf.Inverse()*F_map_pose;
+}
+	
 	void StanleyPlanner::path_callback(const nav_msgs::Path msg) {
         //reset path index
 	    i =0;
@@ -271,23 +321,28 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 
 		speedPub = n.advertise < Twist > ("/cmd_vel", 1);
 		     //   ROS_INFO("++++++++++++++++%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
-		errorPub=n.advertise < Float64 > ("/error", 1);
-		omegaPub=n.advertise < Float64 > ("/omega", 1);
-		modulPub=n.advertise < Float64 > ("/modul", 1);
-		pathXPub=n.advertise < Float64 > ("/pathX", 1);
-		pathYPub=n.advertise < Float64 > ("/pathY", 1);
-		robotXPub=n.advertise < Float64 > ("/robotX", 1);
-		robotYPub=n.advertise < Float64 > ("/robotY", 1);
+		plotPub=n.advertise < stanley::stanleyAnalysis > ("/plotMsgs", 1);
+		//omegaPub=n.advertise < Float64 > ("/omega", 1);
+		//modulPub=n.advertise < Float64 > ("/modul", 1);
+		//pathXPub=n.advertise < Float64 > ("/pathX", 1);
+		//pathYPub=n.advertise < Float64 > ("/pathY", 1);
+		//robotXPub=n.advertise < Float64 > ("/robotX", 1);
+		//robotYPub=n.advertise < Float64 > ("/robotY", 1);
+		//kutjedanPub = n.advertise < Float64 > ("/kutjedan", 1);
+		//kutpetPub = n.advertise < Float64 > ("/kutpet", 1);
+		//kutosamPub =n.advertise < Float64 > ("/kutosam", 1);
+		//kutDamjanPub = n.advertise < Float64 > ("/kutdamjan", 1);
+		//kutja2 = n.advertise < Float64 > ("/kutja", 1);
 		
         nh_private_.param<string>("map_frame_id", map_frame_id_, "map");
         nh_private_.param<string>("robot_frame_id", robot_frame_id_, "base_link");
         nh_private_.param<double>("robot_cmd_vel", v, 0.2);
-            //    ROS_INFO("----------------%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
-		k = 0.6;
-		//v = 0.2;
-		k2 = 0.2;
+	nh_private_.param<double>("stanley_ang_gain", k, 0.25);
+	nh_private_.param<double>("stanley_trans_gain", k2, 0.33);
+
+		
 		yaw = 0;
-		ks = 10;
+
 		condition = false;
 		childframe = "";
 		parentframe = "";

@@ -2,37 +2,53 @@
 <package>
   <name>stanley</name>
   <version>0.0.0</version>
-      <description>
+  <description>The stanley package</description>
 
-        This package provides an implementation of stanley algorithm.
-        The team of Stanford  implemented the velocity and steering controllers
-        separately for its vehicle “Stanley” at the DARPA Grand Challenge. The velocity
-        control is implemented as a PI controller, while the steering angle is computed by a
-        nonlinear feedback function of the cross-track error, which is known as the “Stanley
-        method.”The performance of this controller degrades seriously at higher speeds. 
-
-    </description>
-    <author>Branko Radoš</author>
-    <author>branko.rados@fer.hr</author>
-    <maintainer email="branko.rados@fer.hr">Branko Radoš</maintainer>
-    <license>no</license>
+  <!-- One maintainer tag required, multiple allowed, one person per tag -->
+  <!-- Example:  -->
+  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
+  <maintainer email="osboxes@todo.todo">osboxes</maintainer>
 
 
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>TODO</license>
 
+
+  <!-- Url tags are optional, but multiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- Example: -->
+  <!-- <url type="website">http://wiki.ros.org/stanley</url> -->
+
+
+  <!-- Author tags are optional, multiple are allowed, one per tag -->
+  <!-- Authors do not have to be maintainers, but could be -->
+  <!-- Example: -->
+  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+
+
+  <!-- The *_depend tags are used to specify dependencies -->
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <!-- Examples: -->
+  <!-- Use build_depend for packages you need at compile time: -->
+  <!--   <build_depend>message_generation</build_depend> -->
+  <!-- Use buildtool_depend for build tool packages: -->
+  <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+  <!--   <run_depend>message_runtime</run_depend> -->
+  <!-- Use test_depend for packages you need only for testing: -->
+  <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cmake_modules</build_depend>
   <build_depend>costmap_2d</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nav_core</build_depend>
-  <build_depend>nav_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>roslib</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>tf2</build_depend>
-  <build_depend>tf2_bullet</build_depend>
-  <build_depend>tf2_eigen</build_depend>
   <build_depend>tf2_geometry_msgs</build_depend>
   <build_depend>tf2_kdl</build_depend>
   <build_depend>tf2_msgs</build_depend>
@@ -40,7 +56,8 @@
   <build_depend>tf2_ros</build_depend>
   <build_depend>tf2_sensor_msgs</build_depend>
   <build_depend>tf2_tools</build_depend>
-  <run_depend>cmake_modules</run_depend>
+  <build_depend>message_generation</build_depend>
+
   <run_depend>costmap_2d</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>nav_core</run_depend>
@@ -50,8 +67,6 @@
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf2</run_depend>
-  <run_depend>tf2_bullet</run_depend>
-  <run_depend>tf2_eigen</run_depend>
   <run_depend>tf2_geometry_msgs</run_depend>
   <run_depend>tf2_kdl</run_depend>
   <run_depend>tf2_msgs</run_depend>
@@ -59,7 +74,7 @@
   <run_depend>tf2_ros</run_depend>
   <run_depend>tf2_sensor_msgs</run_depend>
   <run_depend>tf2_tools</run_depend>
-
+  <run_depend>message_runtime</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
