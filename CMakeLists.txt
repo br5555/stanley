@@ -144,12 +144,12 @@ catkin_package(
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
+#catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES stanley
 #  CATKIN_DEPENDS cmake_modules costmap_2d geometry_msgs nav_core nav_msgs roscpp roslib rospy std_msgs tf2 tf2_bullet tf2_eigen tf2_geometry_msgs tf2_kdl tf2_msgs tf2_py tf2_ros tf2_sensor_msgs tf2_tools
 #  DEPENDS system_lib
-)
+#)
 
 ###########
 ## Build ##
@@ -167,6 +167,8 @@ add_executable(pureStanley src/pureStanley.cpp)
 target_link_libraries(pureStanley
    ${catkin_LIBRARIES}
 )
+
+add_dependencies(pureStanley ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -191,7 +193,6 @@ target_link_libraries(pureStanley
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
