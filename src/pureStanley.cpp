@@ -67,7 +67,7 @@ void StanleyPlanner::pose_callback(const Odometry msg) {
 	
 
     double modulDistance1 = sqrt(pow(path.poses[path.poses.size()-1].pose.position.y-robot_Y, 2)+pow(path.poses[path.poses.size()-1].pose.position.x-robot_X, 2));
-    if(modulDistance1 <0.3){
+    if(modulDistance1 <0.5){
         cmd_vel.angular.z =0;
 	    cmd_vel.linear.x = 0;
         speedPub.publish(cmd_vel);
@@ -320,25 +320,15 @@ KDL::Frame StanleyPlanner::transformToBaseLink(const geometry_msgs::Pose& pose,
 				&StanleyPlanner::pose_callback, this);
 
 		speedPub = n.advertise < Twist > ("/cmd_vel", 1);
-		     //   ROS_INFO("++++++++++++++++%s | %s ",map_frame_id_.c_str(), robot_frame_id_.c_str());
+
 		plotPub=n.advertise < stanley::stanleyAnalysis > ("/plotMsgs", 1);
-		//omegaPub=n.advertise < Float64 > ("/omega", 1);
-		//modulPub=n.advertise < Float64 > ("/modul", 1);
-		//pathXPub=n.advertise < Float64 > ("/pathX", 1);
-		//pathYPub=n.advertise < Float64 > ("/pathY", 1);
-		//robotXPub=n.advertise < Float64 > ("/robotX", 1);
-		//robotYPub=n.advertise < Float64 > ("/robotY", 1);
-		//kutjedanPub = n.advertise < Float64 > ("/kutjedan", 1);
-		//kutpetPub = n.advertise < Float64 > ("/kutpet", 1);
-		//kutosamPub =n.advertise < Float64 > ("/kutosam", 1);
-		//kutDamjanPub = n.advertise < Float64 > ("/kutdamjan", 1);
-		//kutja2 = n.advertise < Float64 > ("/kutja", 1);
+
 		
         nh_private_.param<string>("map_frame_id", map_frame_id_, "map");
         nh_private_.param<string>("robot_frame_id", robot_frame_id_, "base_link");
         nh_private_.param<double>("robot_cmd_vel", v, 0.2);
-	nh_private_.param<double>("stanley_ang_gain", k, 0.25);
-	nh_private_.param<double>("stanley_trans_gain", k2, 0.33);
+	nh_private_.param<double>("stanley_ang_gain", k, 0.6);
+	nh_private_.param<double>("stanley_trans_gain", k2, 0.2);
 
 		
 		yaw = 0;
@@ -364,9 +354,9 @@ KDL::Frame StanleyPlanner::transformToBaseLink(const geometry_msgs::Pose& pose,
 		//for loding simulation
 		ros::Duration(5.).sleep();
 
-		while(true){
-		    spinOnce();
-		}
+		
+		    spin();
+		
 
 		return 0;
 
